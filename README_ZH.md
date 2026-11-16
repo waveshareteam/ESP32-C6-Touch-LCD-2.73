@@ -9,7 +9,7 @@
 
 ## ✨ 概述
 
-本仓库提供 ESP32-C6-Touch-LCD-2.73 的出厂演示源码与可直接烧录的合并固件。触摸桌面包含显示、触摸、传感器和 GPIO 测试，以及电子时钟、电子徽章和游戏。
+本仓库提供 ESP-IDF 和 Arduino 外设示例，以及 ESP32-C6-Touch-LCD-2.73 的出厂演示源码与可直接烧录的合并固件。触摸桌面包含显示、触摸、传感器和 GPIO 测试，以及电子时钟、电子徽章和游戏。
 
 | 功能 | 器件或接口 |
 | --- | --- |
@@ -35,20 +35,43 @@
 
 电子徽章将图片保存在板载 Flash，支持手机上传。本版本不包含 SD 卡相册 Photos；操作方式和配网方法见[出厂应用说明](examples/factory/README_ZH.md)。
 
+### 独立示例
+
+| 示例 | 功能 |
+| --- | --- |
+| [IDF 01_lvgl_demo](examples/esp-idf/01_lvgl_demo/README_ZH.md) | LVGL 控件 |
+| [IDF 02_sd_card](examples/esp-idf/02_sd_card/README_ZH.md) | SD 卡 |
+| [IDF 03_qmi8658](examples/esp-idf/03_qmi8658/README_ZH.md) | QMI8658 惯性传感器 |
+| [IDF 04_pcf85063](examples/esp-idf/04_pcf85063/README_ZH.md) | PCF85063 实时时钟 |
+| [IDF 05_shtc3](examples/esp-idf/05_shtc3/README_ZH.md) | SHTC3 温湿度 |
+| [IDF 06_exio](examples/esp-idf/06_exio/README_ZH.md) | 扩展 IO |
+| [IDF 07_battery_voltage](examples/esp-idf/07_battery_voltage/README_ZH.md) | 电池电压 |
+| [Arduino 01_exio](examples/arduino/examples/01_exio/README_ZH.md) | 扩展 IO |
+| [Arduino 02_I2C_qmi8658](examples/arduino/examples/02_I2C_qmi8658/README_ZH.md) | QMI8658 惯性传感器 |
+| [Arduino 03_SD_Card](examples/arduino/examples/03_SD_Card/README_ZH.md) | SD 卡 |
+| [Arduino 04_I2C_pcf85063](examples/arduino/examples/04_I2C_pcf85063/README_ZH.md) | PCF85063 实时时钟 |
+| [Arduino 05_shtc3](examples/arduino/examples/05_shtc3/README_ZH.md) | SHTC3 温湿度 |
+| [Arduino 06_lvgl_demo](examples/arduino/examples/06_lvgl_demo/README_ZH.md) | LVGL 显示与触摸 |
+| [Arduino 07_battery_voltage](examples/arduino/examples/07_battery_voltage/README_ZH.md) | 电池电压 |
+
 ## 🛠️ 开发环境
 
-| 开发框架 | 版本 | 工程数 |
-| --- | --- | ---: |
-| ESP-IDF | v5.5.4 | 1 个出厂应用 |
-| LVGL | 9.5.0 | GUI 依赖 |
+| 框架 / 库 | 版本 | 用途 |
+| --- | --- | --- |
+| ESP-IDF | v5.5.4 | 7 个独立示例和出厂应用 |
+| Arduino-ESP32 | 3.3.12 | 7 个独立示例 |
+| LVGL（IDF / Arduino） | 9.5.0 / 8.4.0 | 显示与触摸界面 |
+| SensorLib（Arduino） | 0.3.1 | RTC |
 
-在 ESP-IDF 终端进入 [examples/factory](examples/factory/README_ZH.md)，运行 `idf.py build`。ESP-IDF 组件管理器会自动下载依赖。
+请先阅读 [ESP-IDF 入门指南](docs/getting-started-idf_ZH.md)或 [Arduino 入门指南](docs/getting-started-arduino_ZH.md)，再按照各示例说明运行。Arduino 配置为 **16 MB Flash、DIO、16M Flash (3MB APP/9.9MB FATFS)、USB CDC On Boot Enabled**。无需 PSRAM 配置。
 
 ## 📚 资料
 
 - [出厂应用使用说明](examples/factory/README_ZH.md)
 - [出厂固件与烧录方法](firmware/README_ZH.md)
 - [板级支持与引脚定义](examples/factory/components/esp32_c6_touch_lcd_2_73/include/bsp/esp32_c6_touch_lcd_2_73.h)
+- [板级 IO 与显示格式](docs/board-io_ZH.md)
+- [底板原理图](hardware/schematic/ESP32-C6-LCD-2.73.pdf)
 
 ## 🤝 支持
 
