@@ -39,20 +39,20 @@
 
 | 示例 | 功能 |
 | --- | --- |
-| [IDF 01_exio](examples/esp-idf/01_exio/README_ZH.md) | 扩展 IO |
-| [IDF 02_I2C_qmi8658](examples/esp-idf/02_I2C_qmi8658/README_ZH.md) | QMI8658 惯性传感器 |
-| [IDF 03_SD_Card](examples/esp-idf/03_SD_Card/README_ZH.md) | SD 卡 |
-| [IDF 04_I2C_pcf85063](examples/esp-idf/04_I2C_pcf85063/README_ZH.md) | PCF85063 实时时钟 |
-| [IDF 05_shtc3](examples/esp-idf/05_shtc3/README_ZH.md) | SHTC3 温湿度 |
-| [IDF 06_lvgl_demo](examples/esp-idf/06_lvgl_demo/README_ZH.md) | LVGL 控件 |
-| [IDF 07_battery_voltage](examples/esp-idf/07_battery_voltage/README_ZH.md) | 电池电压 |
-| [Arduino 01_exio](examples/arduino/examples/01_exio/README_ZH.md) | 扩展 IO |
-| [Arduino 02_I2C_qmi8658](examples/arduino/examples/02_I2C_qmi8658/README_ZH.md) | QMI8658 惯性传感器 |
-| [Arduino 03_SD_Card](examples/arduino/examples/03_SD_Card/README_ZH.md) | SD 卡 |
-| [Arduino 04_I2C_pcf85063](examples/arduino/examples/04_I2C_pcf85063/README_ZH.md) | PCF85063 实时时钟 |
-| [Arduino 05_shtc3](examples/arduino/examples/05_shtc3/README_ZH.md) | SHTC3 温湿度 |
-| [Arduino 06_lvgl_demo](examples/arduino/examples/06_lvgl_demo/README_ZH.md) | LVGL 显示与触摸 |
-| [Arduino 07_battery_voltage](examples/arduino/examples/07_battery_voltage/README_ZH.md) | 电池电压 |
+| [IDF 01_exio](examples/esp-idf/01_exio/README_ZH.md) | 11 路 EXIO 触摸控制 |
+| [IDF 02_I2C_qmi8658](examples/esp-idf/02_I2C_qmi8658/README_ZH.md) | 六轴实时数据界面 |
+| [IDF 03_SD_Card](examples/esp-idf/03_SD_Card/README_ZH.md) | 屏幕显示容量、剩余空间和文件校验 |
+| [IDF 04_I2C_pcf85063](examples/esp-idf/04_I2C_pcf85063/README_ZH.md) | 屏幕显示 RTC 时间、日期和星期，支持 Wi-Fi 同步北京时间 |
+| [IDF 05_shtc3](examples/esp-idf/05_shtc3/README_ZH.md) | 温湿度实时卡片 |
+| [IDF 06_lvgl_demo](examples/esp-idf/06_lvgl_demo/README_ZH.md) | LVGL 显示与触摸界面 |
+| [IDF 07_battery_voltage](examples/esp-idf/07_battery_voltage/README_ZH.md) | 电压和 ADC 实时界面 |
+| [Arduino 01_exio](examples/arduino/examples/01_exio/README_ZH.md) | 11 路 EXIO 触摸控制 |
+| [Arduino 02_I2C_qmi8658](examples/arduino/examples/02_I2C_qmi8658/README_ZH.md) | 六轴实时数据界面 |
+| [Arduino 03_SD_Card](examples/arduino/examples/03_SD_Card/README_ZH.md) | 屏幕显示容量、剩余空间和文件校验 |
+| [Arduino 04_I2C_pcf85063](examples/arduino/examples/04_I2C_pcf85063/README_ZH.md) | 屏幕显示 RTC 时间、日期和星期，支持 Wi-Fi 同步北京时间 |
+| [Arduino 05_shtc3](examples/arduino/examples/05_shtc3/README_ZH.md) | 温湿度实时卡片 |
+| [Arduino 06_lvgl_demo](examples/arduino/examples/06_lvgl_demo/README_ZH.md) | LVGL 显示与触摸界面 |
+| [Arduino 07_battery_voltage](examples/arduino/examples/07_battery_voltage/README_ZH.md) | 电压和 ADC 实时界面 |
 
 ## 🛠️ 开发环境
 
@@ -61,7 +61,7 @@
 | ESP-IDF | v5.5.4 | 7 个独立示例和出厂应用 |
 | Arduino-ESP32 | 3.3.12 | 7 个独立示例 |
 | LVGL（IDF / Arduino） | 9.5.0 / 8.4.0 | 显示与触摸界面 |
-| SensorLib（Arduino） | 0.3.1 | RTC |
+| SensorLib（Arduino） | 0.3.1 | QMI8658 |
 
 请先阅读 [ESP-IDF 入门指南](docs/getting-started-idf_ZH.md)或 [Arduino 入门指南](docs/getting-started-arduino_ZH.md)，再按照各示例说明运行。Arduino 配置为 **16 MB Flash、DIO、16M Flash (3MB APP/9.9MB FATFS)、USB CDC On Boot Enabled**。无需 PSRAM 配置。
 

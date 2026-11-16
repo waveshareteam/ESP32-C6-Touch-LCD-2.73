@@ -39,20 +39,20 @@ The Photo Badge stores images in on-board Flash and accepts uploads from a phone
 
 | Example | Function |
 | --- | --- |
-| [IDF 01_exio](examples/esp-idf/01_exio/README.md) | IO Expander |
-| [IDF 02_I2C_qmi8658](examples/esp-idf/02_I2C_qmi8658/README.md) | QMI8658 IMU |
-| [IDF 03_SD_Card](examples/esp-idf/03_SD_Card/README.md) | SD Card |
-| [IDF 04_I2C_pcf85063](examples/esp-idf/04_I2C_pcf85063/README.md) | PCF85063 RTC |
-| [IDF 05_shtc3](examples/esp-idf/05_shtc3/README.md) | SHTC3 Temperature and Humidity |
-| [IDF 06_lvgl_demo](examples/esp-idf/06_lvgl_demo/README.md) | LVGL Widgets |
-| [IDF 07_battery_voltage](examples/esp-idf/07_battery_voltage/README.md) | Battery Voltage |
-| [Arduino 01_exio](examples/arduino/examples/01_exio/README.md) | IO Expander |
-| [Arduino 02_I2C_qmi8658](examples/arduino/examples/02_I2C_qmi8658/README.md) | QMI8658 IMU |
-| [Arduino 03_SD_Card](examples/arduino/examples/03_SD_Card/README.md) | SD Card |
-| [Arduino 04_I2C_pcf85063](examples/arduino/examples/04_I2C_pcf85063/README.md) | PCF85063 RTC |
-| [Arduino 05_shtc3](examples/arduino/examples/05_shtc3/README.md) | SHTC3 Temperature and Humidity |
-| [Arduino 06_lvgl_demo](examples/arduino/examples/06_lvgl_demo/README.md) | LVGL Display and Touch |
-| [Arduino 07_battery_voltage](examples/arduino/examples/07_battery_voltage/README.md) | Battery Voltage |
+| [IDF 01_exio](examples/esp-idf/01_exio/README.md) | 11 touchscreen-controlled EXIO outputs |
+| [IDF 02_I2C_qmi8658](examples/esp-idf/02_I2C_qmi8658/README.md) | Six-axis live LCD dashboard |
+| [IDF 03_SD_Card](examples/esp-idf/03_SD_Card/README.md) | LCD capacity, free space and file verification |
+| [IDF 04_I2C_pcf85063](examples/esp-idf/04_I2C_pcf85063/README.md) | RTC clock, date and weekday on LCD; Wi-Fi Beijing time synchronization |
+| [IDF 05_shtc3](examples/esp-idf/05_shtc3/README.md) | Live temperature and humidity cards |
+| [IDF 06_lvgl_demo](examples/esp-idf/06_lvgl_demo/README.md) | LVGL display and touch interface |
+| [IDF 07_battery_voltage](examples/esp-idf/07_battery_voltage/README.md) | LCD voltage and ADC dashboard |
+| [Arduino 01_exio](examples/arduino/examples/01_exio/README.md) | 11 touchscreen-controlled EXIO outputs |
+| [Arduino 02_I2C_qmi8658](examples/arduino/examples/02_I2C_qmi8658/README.md) | Six-axis live LCD dashboard |
+| [Arduino 03_SD_Card](examples/arduino/examples/03_SD_Card/README.md) | LCD capacity, free space and file verification |
+| [Arduino 04_I2C_pcf85063](examples/arduino/examples/04_I2C_pcf85063/README.md) | RTC clock, date and weekday on LCD; Wi-Fi Beijing time synchronization |
+| [Arduino 05_shtc3](examples/arduino/examples/05_shtc3/README.md) | Live temperature and humidity cards |
+| [Arduino 06_lvgl_demo](examples/arduino/examples/06_lvgl_demo/README.md) | LVGL display and touch interface |
+| [Arduino 07_battery_voltage](examples/arduino/examples/07_battery_voltage/README.md) | LCD voltage and ADC dashboard |
 
 ## 🛠️ Development Environment
 
@@ -61,7 +61,7 @@ The Photo Badge stores images in on-board Flash and accepts uploads from a phone
 | ESP-IDF | v5.5.4 | 7 standalone examples and factory application |
 | Arduino-ESP32 | 3.3.12 | 7 standalone examples |
 | LVGL (IDF / Arduino) | 9.5.0 / 8.4.0 | Display and touch interfaces |
-| SensorLib (Arduino) | 0.3.1 | RTC |
+| SensorLib (Arduino) | 0.3.1 | QMI8658 |
 
 Start with the [ESP-IDF guide](docs/getting-started-idf.md) or [Arduino guide](docs/getting-started-arduino.md), then follow the selected example README. Arduino uses **16 MB Flash, DIO, 16M Flash (3MB APP/9.9MB FATFS), USB CDC On Boot Enabled**. No PSRAM setting is required.
 

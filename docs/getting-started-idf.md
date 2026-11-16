@@ -22,7 +22,7 @@ The seven basic examples use **115200 baud**; the factory project uses **2,000,0
 
 ## What to Look For
 
-After uploading, follow **Expected Result** in the example README. Some examples only print serial messages and intentionally leave the screen dark; a dark screen alone does not mean uploading failed.
+After uploading, follow **Expected Result** in the example README. All examples light the LCD and show data or test results. The SD example completes its card test before displaying the result; sensor errors appear on screen.
 
 Uploading a basic example replaces the factory desktop application. To return to the desktop, follow the [factory firmware instructions](../firmware/README.md).
 

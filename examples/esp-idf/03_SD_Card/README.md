@@ -4,24 +4,24 @@
 
 ## What It Does
 
-Mount a microSD card, overwrite /test.txt, then read and compare its contents. Display the result on the LCD.
+Show SD capacity, free space and a file write/read verification result on the LCD.
 
 ## Hardware Required
 
-ESP32-C6-Touch-LCD-2.73. The board, a USB data cable and a FAT32 microSD card. Copy any existing /test.txt elsewhere before running.
+ESP32-C6-Touch-LCD-2.73. The board, a USB data cable and a FAT32 microSD card. Preserve any existing /test.txt before testing.
 
 ## How to Run
 
-1. Complete the [ESP-IDF first-use guide](../../../docs/getting-started-idf.md), then open this project in an ESP-IDF v5.5.4 terminal.
+1. Complete the [ESP-IDF guide](../../../docs/getting-started-idf.md) and open this project in an ESP-IDF v5.5.4 terminal.
 2. Run `idf.py build`, then `idf.py flash monitor`.
-3. Insert the card before startup; read the LCD result and serial output. Press RESET to repeat.
+3. Insert the card before startup. Observe the LCD result; press RESET to repeat.
 
 ## Expected Result
 
-The LCD reports Write / read passed with the test text. The card is unmounted after the test; /test.txt remains on it. A missing card produces an LCD hint.
+The example overwrites /test.txt, reads it back, then shows capacity/free space and Write / read: PASS with verified text. Missing-card and read/write errors are shown on screen. The file remains on the card.
 
 ## Troubleshooting
 
-The example does not format cards. If mounting fails, check insertion and FAT32 formatting. A failed write/read is reported separately from a mount failure.
+The example never formats a card. SD operations finish before LCD transfers begin on their shared SPI pins; the result screen appears after the test. Insert a FAT32 card and RESET after a mount failure.
 
-For pin definitions, see the [board IO guide](../../../docs/board-io.md).
+See the [board IO guide](../../../docs/board-io.md) for pins and reserved functions.

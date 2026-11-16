@@ -4,24 +4,24 @@
 
 ## What It Does
 
-Toggle the EXIO6/EXIO7 header outputs and backlight through the CH32V006.
+Control all eleven exposed EXIO4–EXIO14 outputs from the touchscreen. The backlight stays on.
 
 ## Hardware Required
 
-ESP32-C6-Touch-LCD-2.73. The board and a USB data cable; optionally a multimeter between EXIO6/7 and GND. Disconnect external loads from these outputs first.
+ESP32-C6-Touch-LCD-2.73. The board and a USB data cable. Disconnect external loads from the test pins; optionally measure them against GND with a multimeter.
 
 ## How to Run
 
-1. Complete the [ESP-IDF first-use guide](../../../docs/getting-started-idf.md), then open this project in an ESP-IDF v5.5.4 terminal.
+1. Complete the [ESP-IDF guide](../../../docs/getting-started-idf.md) and open this project in an ESP-IDF v5.5.4 terminal.
 2. Run `idf.py build`, then `idf.py flash monitor`.
-3. Measure the EXIO6/7 outputs and observe the backlight.
+3. Tap any EXIO tile to toggle its commanded output. Tap ALL LOW to drive all eleven low.
 
 ## Expected Result
 
-Both outputs alternate low/high every second. Backlight PWM alternates 0%/97%. No LCD image is initialized. EXIO3 remains an input.
+EXIO4–EXIO14 are driven LOW at startup. Successful writes update each tile to LOW/HIGH; failed writes retain the last successful state. EXIO0/1 are reset pins, EXIO2 serves the backlight and EXIO3 remains a charge input.
 
 ## Troubleshooting
 
-A blank image is expected: this is an IO/PWM test. Use EXIO6/7, not the display/touch reset pins. See the board IO guide.
+The tiles show commanded output levels, not an electrical loopback measurement. Use the eleven header outputs listed in the BSP; a -- or red message means the corresponding operation failed.
 
-For pin definitions, see the [board IO guide](../../../docs/board-io.md).
+See the [board IO guide](../../../docs/board-io.md) for pins and reserved functions.

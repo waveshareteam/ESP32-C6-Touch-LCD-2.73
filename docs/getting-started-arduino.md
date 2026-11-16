@@ -33,7 +33,7 @@ These options match the board's 16 MB Flash configuration. ESP32-C6 has no PSRAM
 1. Prepare any battery or SD card required by the example README.
 2. Click **Upload** and wait for completion.
 3. Open **Serial Monitor**, select **115200 baud**, then press **RESET** to see messages from startup.
-4. Follow **How to Run** and **Expected Result** in the example README. Some examples only print serial readings and leave the LCD dark.
+4. Follow **How to Run** and **Expected Result** in the example README. All examples light the LCD and show their results; serial output provides additional details.
 
 Uploading an example replaces the factory desktop application; use the [factory firmware instructions](../firmware/README.md) when you want to restore it.
 
