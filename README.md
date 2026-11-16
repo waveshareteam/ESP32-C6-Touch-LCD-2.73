@@ -39,12 +39,12 @@ The Photo Badge stores images in on-board Flash and accepts uploads from a phone
 
 | Example | Function |
 | --- | --- |
-| [IDF 01_lvgl_demo](examples/esp-idf/01_lvgl_demo/README.md) | LVGL Widgets |
-| [IDF 02_sd_card](examples/esp-idf/02_sd_card/README.md) | SD Card |
-| [IDF 03_qmi8658](examples/esp-idf/03_qmi8658/README.md) | QMI8658 IMU |
-| [IDF 04_pcf85063](examples/esp-idf/04_pcf85063/README.md) | PCF85063 RTC |
+| [IDF 01_exio](examples/esp-idf/01_exio/README.md) | IO Expander |
+| [IDF 02_I2C_qmi8658](examples/esp-idf/02_I2C_qmi8658/README.md) | QMI8658 IMU |
+| [IDF 03_SD_Card](examples/esp-idf/03_SD_Card/README.md) | SD Card |
+| [IDF 04_I2C_pcf85063](examples/esp-idf/04_I2C_pcf85063/README.md) | PCF85063 RTC |
 | [IDF 05_shtc3](examples/esp-idf/05_shtc3/README.md) | SHTC3 Temperature and Humidity |
-| [IDF 06_exio](examples/esp-idf/06_exio/README.md) | IO Expander |
+| [IDF 06_lvgl_demo](examples/esp-idf/06_lvgl_demo/README.md) | LVGL Widgets |
 | [IDF 07_battery_voltage](examples/esp-idf/07_battery_voltage/README.md) | Battery Voltage |
 | [Arduino 01_exio](examples/arduino/examples/01_exio/README.md) | IO Expander |
 | [Arduino 02_I2C_qmi8658](examples/arduino/examples/02_I2C_qmi8658/README.md) | QMI8658 IMU |

@@ -8,7 +8,7 @@
 
 1. 下载并解压整个仓库，不要在 ZIP 压缩包里直接编译。
 2. 按官方说明安装 [ESP-IDF v5.5.4（ESP32-C6）](https://docs.espressif.com/projects/esp-idf/zh_CN/v5.5.4/esp32c6/get-started/)。使用 VS Code 时安装 Espressif 的 ESP-IDF 扩展，选择已安装的 v5.5.4 环境；仓库使用的版本见[仓库首页](../README_ZH.md)的环境表。
-3. 打开要运行的单个示例目录，例如 `examples/esp-idf/01_lvgl_demo`，不要打开仓库根目录或 `components`；目录中应有 `CMakeLists.txt`，工程会自动选择 **ESP32-C6**。
+3. 打开要运行的单个示例目录，例如 `examples/esp-idf/06_lvgl_demo`，不要打开仓库根目录或 `components`；目录中应有 `CMakeLists.txt`，工程会自动选择 **ESP32-C6**。
 4. 在 VS Code 命令面板执行 **ESP-IDF: Open ESP-IDF Terminal**；也可打开已安装的 ESP-IDF 终端，再进入示例目录，后续命令都在这个终端运行。
 
 ## 连接与烧录

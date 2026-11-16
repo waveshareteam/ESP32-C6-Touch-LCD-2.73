@@ -8,7 +8,7 @@ Use this guide once to prepare your computer, then follow the README in the exam
 
 1. Download and extract the complete repository; do not try to build inside the ZIP file.
 2. Install [ESP-IDF v5.5.4 for ESP32-C6](https://docs.espressif.com/projects/esp-idf/en/v5.5.4/esp32c6/get-started/). If using VS Code, install Espressif's ESP-IDF extension and select the installed v5.5.4 environment; versions used by this repository are listed in the [repository README](../README.md).
-3. Open the individual example folder, such as `examples/esp-idf/01_lvgl_demo`, rather than the repository root or its `components` folder. The selected folder must contain `CMakeLists.txt`; the project selects **ESP32-C6** automatically.
+3. Open the individual example folder, such as `examples/esp-idf/06_lvgl_demo`, rather than the repository root or its `components` folder. The selected folder must contain `CMakeLists.txt`; the project selects **ESP32-C6** automatically.
 4. In VS Code, run **ESP-IDF: Open ESP-IDF Terminal** from the Command Palette. Alternatively, open the installed ESP-IDF terminal and enter the example folder; use this terminal for the commands in the example README.
 
 ## Connect and Upload

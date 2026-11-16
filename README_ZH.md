@@ -39,12 +39,12 @@
 
 | 示例 | 功能 |
 | --- | --- |
-| [IDF 01_lvgl_demo](examples/esp-idf/01_lvgl_demo/README_ZH.md) | LVGL 控件 |
-| [IDF 02_sd_card](examples/esp-idf/02_sd_card/README_ZH.md) | SD 卡 |
-| [IDF 03_qmi8658](examples/esp-idf/03_qmi8658/README_ZH.md) | QMI8658 惯性传感器 |
-| [IDF 04_pcf85063](examples/esp-idf/04_pcf85063/README_ZH.md) | PCF85063 实时时钟 |
+| [IDF 01_exio](examples/esp-idf/01_exio/README_ZH.md) | 扩展 IO |
+| [IDF 02_I2C_qmi8658](examples/esp-idf/02_I2C_qmi8658/README_ZH.md) | QMI8658 惯性传感器 |
+| [IDF 03_SD_Card](examples/esp-idf/03_SD_Card/README_ZH.md) | SD 卡 |
+| [IDF 04_I2C_pcf85063](examples/esp-idf/04_I2C_pcf85063/README_ZH.md) | PCF85063 实时时钟 |
 | [IDF 05_shtc3](examples/esp-idf/05_shtc3/README_ZH.md) | SHTC3 温湿度 |
-| [IDF 06_exio](examples/esp-idf/06_exio/README_ZH.md) | 扩展 IO |
+| [IDF 06_lvgl_demo](examples/esp-idf/06_lvgl_demo/README_ZH.md) | LVGL 控件 |
 | [IDF 07_battery_voltage](examples/esp-idf/07_battery_voltage/README_ZH.md) | 电池电压 |
 | [Arduino 01_exio](examples/arduino/examples/01_exio/README_ZH.md) | 扩展 IO |
 | [Arduino 02_I2C_qmi8658](examples/arduino/examples/02_I2C_qmi8658/README_ZH.md) | QMI8658 惯性传感器 |
