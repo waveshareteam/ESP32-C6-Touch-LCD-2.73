@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Badge Manager</title>
+<style>
+:root{color-scheme:light;--ink:#283b40;--muted:#687b76;--green:#496c61;--line:#d5dbd2}
+*{box-sizing:border-box}body{margin:0;padding:20px;background:#f5f3ed;color:var(--ink);font:15px system-ui,sans-serif}
+main{max-width:960px;margin:auto;padding:24px;border-radius:24px;background:#fff;box-shadow:0 15px 45px #283b4012}
+a{color:var(--green)}h1{margin:18px 0 8px;font-size:30px}h2{margin:0 0 16px;font-size:20px}p{line-height:1.5;color:var(--muted)}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:24px 0}.panel{padding:18px;border:1px solid var(--line);border-radius:18px;background:#f9faf6}
+#slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.slot{padding:8px;color:var(--ink);background:white;border:1px solid var(--line);border-radius:12px}
+.slot.selected{outline:3px solid #496c6140;border-color:var(--green)}.thumb{width:100%;aspect-ratio:1;background:#e8ece6;display:grid;place-items:center;border-radius:6px;overflow:hidden}
+.thumb canvas{width:100%;height:100%}.caption{display:block;margin-top:8px;font-size:12px}.active{color:var(--green);font-weight:bold}
+button{font:inherit;font-weight:650;cursor:pointer;padding:12px;border:0;border-radius:12px;background:var(--green);color:white}
+button:disabled,input:disabled{opacity:.5;cursor:default}.actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}.actions button{flex:1}.secondary{background:#e8ece6;color:var(--ink)}
+#preview{display:block;width:100%;height:auto;aspect-ratio:1;background:#e8ece6;border:1px solid var(--line);border-radius:8px;touch-action:none;cursor:grab}
+#preview.dragging{cursor:grabbing}input[type=file]{width:100%;padding:12px 0}label{display:block;margin:12px 0;color:var(--muted)}input[type=range]{width:100%;accent-color:var(--green)}
+.color{display:flex;align-items:center;justify-content:space-between}input[type=color]{height:36px;width:56px;border:1px solid var(--line);background:white;border-radius:8px}
+#upload,#done{width:100%;margin-top:14px}#status{min-height:3em;white-space:pre-line;color:var(--muted);line-height:1.5;margin-top:18px}#status.error{color:#a03732}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #799dcd;outline-offset:3px}
+@media(max-width:720px){body{padding:8px}main{padding:16px;border-radius:16px}.layout{grid-template-columns:1fr;gap:14px}.panel{padding:14px}}
+</style>
+</head>
+<body>
+<main>
+<a href="/" id="home">&larr; Device home</a>
+<h1>Badge Manager</h1>
+<p id="intro">Drag to crop, zoom, then save. Your six pictures stay on the device after restart.</p>
+<div class="layout">
+<section class="panel" aria-label="Saved pictures">
+<h2>Pictures</h2><div id="slots"></div>
+<div class="actions"><button id="active" class="secondary" disabled>Set Active</button><button id="delete" class="secondary" disabled>Delete</button></div>
+<div class="actions"><button id="refresh" class="secondary">Refresh</button></div>
+</section>
+<section class="panel" aria-label="Crop editor">
+<h2>Editor</h2>
+<canvas id="preview" width="320" height="320" aria-label="Crop preview. Drag to reposition your photo."></canvas>
+<label for="file">Choose photo</label><input id="file" type="file" accept="image/jpeg,image/png,image/webp">
+<label for="zoom">Zoom</label><input id="zoom" type="range" min="0.35" max="4" step="0.01" value="1">
+<label class="color" for="background">Background<input id="background" type="color" value="#e8ece6"></label>
+<button id="upload" disabled>Save To Selected Slot</button>
+</section>
+</div>
+<button id="done">Done</button>
+<div id="status" role="status" aria-live="polite">Loading pictures…</div>
+</main>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const canvas = $('preview'), ctx = canvas.getContext('2d', {willReadFrequently:true});
+const app = {busy:true,closed:false,state:null,selected:0,image:null,encoded:null,scale:1,x:0,y:0,drag:null};
+const thumbnails = new Map();
+let width = 320, height = 320;
+
+// Build a photo-specific median-cut palette. Only the browser quantizes;
+// firmware stores these exact opaque BGRA colors and I8 indices unchanged.
+function encodeIndexed8(rgba, width, dither = true) {
+  const count = rgba.length / 4, height = count / width;
+  if (!Number.isInteger(height) || width < 1 || height < 1)
+    throw new Error('Invalid photo dimensions.');
+  const counts = new Uint32Array(32768), sums = [new Uint32Array(32768), new Uint32Array(32768), new Uint32Array(32768)];
+  for (let p = 0; p < rgba.length; p += 4) {
+    const bin = ((rgba[p] >> 3) << 10) | ((rgba[p+1] >> 3) << 5) | (rgba[p+2] >> 3);
+    ++counts[bin];
+    for (let c = 0; c < 3; ++c) sums[c][bin] += rgba[p+c];
+  }
+  const channel = (bin, axis) => (bin >> (10-5*axis)) & 31;
+  function measure(bins) {
+    let weight = 0;
+    const sum = [0,0,0], square = [0,0,0];
+    for (const bin of bins) {
+      const n = counts[bin]; weight += n;
+      for (let c = 0; c < 3; ++c) {
+        const v = channel(bin,c); sum[c] += n*v; square[c] += n*v*v;
+      }
+    }
+    const variance = sum.map((v,c) => Math.max(0,square[c]-v*v/weight) * [2,4,1][c]);
+    const axis = variance.indexOf(Math.max(...variance));
+    return {bins,weight,axis,score:bins.length > 1 ? variance[axis] : -1};
+  }
+  const used = [];
+  for (let bin = 0; bin < counts.length; ++bin) if (counts[bin]) used.push(bin);
+  const boxes = [measure(used)];
+  while (boxes.length < 256) {
+    let pick = -1, score = -1;
+    for (let i = 0; i < boxes.length; ++i)
+      if (boxes[i].score > score) { pick = i; score = boxes[i].score; }
+    if (pick < 0) break;
+    const current = boxes[pick], bins = current.bins;
+    bins.sort((a,b) => channel(a,current.axis)-channel(b,current.axis) || a-b);
+    let weight = 0, split = 1;
+    for (; split < bins.length; ++split) {
+      weight += counts[bins[split-1]];
+      if (weight >= current.weight/2) break;
+    }
+    split = Math.min(split,bins.length-1);
+    boxes[pick] = measure(bins.slice(0,split));
+    boxes.push(measure(bins.slice(split)));
+  }
+  const bytes = new Uint8Array(1024+count), colors = [];
+  for (const entry of boxes) {
+    const sum = [0,0,0];
+    for (const bin of entry.bins) for (let c = 0; c < 3; ++c) sum[c] += sums[c][bin];
+    colors.push(sum.map(v => Math.round(v/entry.weight)));
+  }
+  for (let i = 0; i < 256; ++i) {
+    const color = colors[i] || colors[0];
+    bytes.set([color[2],color[1],color[0],255],i*4);
+  }
+  const lookup = new Uint16Array(32768); lookup.fill(65535);
+  function nearest(r,g,b) {
+    const bin = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
+    if (lookup[bin] !== 65535) return lookup[bin];
+    let best = 0, distance = Infinity;
+    for (let i = 0; i < colors.length; ++i) {
+      const c = colors[i], dr = r-c[0], dg = g-c[1], db = b-c[2];
+      const value = 2*dr*dr+4*dg*dg+db*db;
+      if (value < distance) { best = i; distance = value; }
+    }
+    lookup[bin] = best;
+    return best;
+  }
+  let row = new Float32Array((width+2)*3), next = new Float32Array(row.length);
+  for (let y = 0; y < height; ++y) {
+    const step = (y & 1) ? -1 : 1;
+    for (let x = step > 0 ? 0 : width-1; x >= 0 && x < width; x += step) {
+      const p = (y*width+x)*4, e = (x+1)*3;
+      const rgb = [0,1,2].map(c => Math.max(0,Math.min(255,Math.round(rgba[p+c]+row[e+c]))));
+      const index = nearest(...rgb); bytes[1024+y*width+x] = index;
+      if (dither) for (let c = 0; c < 3; ++c) {
+        const error = rgb[c]-colors[index][c];
+        row[e+step*3+c] += error*7/16;
+        next[e-step*3+c] += error*3/16;
+        next[e+c] += error*5/16;
+        next[e+step*3+c] += error/16;
+      }
+    }
+    [row,next] = [next,row]; next.fill(0);
+  }
+  return bytes;
+}
+function decodeIndexed8(bytes, rgba) {
+  if (bytes.length !== 1024+rgba.length/4) throw new Error('Incomplete picture data.');
+  for (let i = 0, p = 0; p < rgba.length; ++i, p += 4) {
+    const color = bytes[1024+i]*4;
+    rgba[p] = bytes[color+2];
+    rgba[p + 1] = bytes[color+1];
+    rgba[p + 2] = bytes[color];
+    rgba[p + 3] = 255;
+  }
+}
+function status(text, error = false) { $('status').textContent = text; $('status').className = error ? 'error' : ''; }
+function controls() {
+  const locked = app.busy || app.closed || !app.state;
+  for (const id of ['file','zoom','background','refresh','done']) $(id).disabled = locked;
+  $('upload').disabled = locked || !app.image;
+  const slot = app.state && app.state.slots.find(item => item.slot === app.selected);
+  $('active').disabled = locked || !slot || !slot.hasImage || slot.isActive;
+  $('delete').disabled = locked || !slot || !slot.hasImage;
+  for (const tile of $('slots').children) {
+    tile.disabled = locked;
+    const selected = Number(tile.dataset.slot) === app.selected;
+    tile.classList.toggle('selected', selected);
+    tile.setAttribute('aria-pressed', String(selected));
+  }
+}
+function busy(value) { app.busy = value; app.drag = null; canvas.classList.remove('dragging'); controls(); }
+async function request(url, options = {}, raw = false) {
+  const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 50000);
+  try {
+    const response = await fetch(url, {...options, cache:'no-store', signal:controller.signal});
+    if (!response.ok) throw new Error((await response.text()) || `Request failed (${response.status}).`);
+    return raw ? new Uint8Array(await response.arrayBuffer()) : await response.json();
+  } finally { clearTimeout(timer); }
+}
+function draw() {
+  ctx.fillStyle = $('background').value;
+  ctx.fillRect(0, 0, width, height);
+  if (!app.image) {
+    app.encoded = null;
+    ctx.fillStyle = '#687b76'; ctx.font = '18px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Choose a photo', width / 2, height / 2);
+    return;
+  }
+  const sw = app.image.width * app.scale, sh = app.image.height * app.scale;
+  app.x = Math.min(Math.max(0, width - sw), Math.max(Math.min(0, width - sw), app.x));
+  app.y = Math.min(Math.max(0, height - sh), Math.max(Math.min(0, height - sh), app.y));
+  ctx.drawImage(app.image, app.x, app.y, sw, sh);
+  // Show exactly the colors that will be saved, including the background.
+  const image = ctx.getImageData(0, 0, width, height);
+  app.encoded = encodeIndexed8(image.data,width);
+  decodeIndexed8(app.encoded, image.data);
+  ctx.putImageData(image, 0, 0);
+}
+function fit() {
+  if (!app.image) return;
+  app.scale = Math.max(width / app.image.width, height / app.image.height);
+  app.x = (width - app.image.width * app.scale) / 2;
+  app.y = (height - app.image.height * app.scale) / 2;
+  $('zoom').value = '1';
+}
+function renderSlots() {
+  $('slots').replaceChildren();
+  for (const slot of app.state.slots) {
+    const tile = document.createElement('button'); tile.type = 'button'; tile.className = 'slot'; tile.dataset.slot = slot.slot;
+    tile.setAttribute('aria-label', `Slot ${slot.slot + 1}${slot.isActive ? ', active' : ''}${slot.hasImage ? '' : ', empty'}`);
+    const thumb = document.createElement('span'); thumb.className = 'thumb';
+    const cached = thumbnails.get(slot.slot);
+    if (slot.hasImage && cached) thumb.append(cached);
+    else thumb.textContent = slot.hasImage ? 'Loading…' : 'Empty';
+    const caption = document.createElement('span'); caption.className = `caption${slot.isActive ? ' active' : ''}`;
+    caption.textContent = `Slot ${slot.slot + 1}${slot.isActive ? ' · Active' : ''}`;
+    tile.append(thumb, caption); $('slots').append(tile);
+  }
+  controls();
+}
+async function refresh() {
+  const state = await request('/badge/state');
+  if (!state.ready || state.format !== 'indexed8' || !Number.isInteger(state.width) || !Number.isInteger(state.height) ||
+      state.width < 1 || state.height < 1 || state.width > 1024 || state.height > 1024 ||
+      state.uploadBytes !== 1024+state.width * state.height || !Array.isArray(state.slots) || state.slots.length !== 6)
+    throw new Error('Device returned an unsupported picture format.');
+  if (!app.state) app.selected = state.activeSlot;
+  if (width !== state.width || height !== state.height) {
+    width = canvas.width = state.width; height = canvas.height = state.height;
+    canvas.style.aspectRatio = `${width}/${height}`; fit(); draw();
+  }
+  app.state = state;
+  $('intro').textContent = `${width} × ${height} display. Drag to crop, zoom, then save. Your six pictures stay on the device after restart.`;
+  thumbnails.clear(); renderSlots();
+  // One transfer at a time keeps the device's HTTP buffers and sockets bounded.
+  for (const slot of state.slots) {
+    if (!slot.hasImage) continue;
+    const bytes = await request(`/badge/image?slot=${slot.slot}`, {}, true);
+    if (bytes.length !== 1024+width * height) throw new Error(`Incomplete preview for slot ${slot.slot + 1}.`);
+    const thumb = document.createElement('canvas'); thumb.width = width; thumb.height = height;
+    const context = thumb.getContext('2d'), image = context.createImageData(width, height);
+    decodeIndexed8(bytes, image.data); context.putImageData(image, 0, 0);
+    thumbnails.set(slot.slot, thumb); renderSlots();
+  }
+}
+async function action(task, success) {
+  if (app.busy || app.closed) return;
+  busy(true); status('Working…');
+  try { await task(); await refresh(); status(success); }
+  catch (error) {
+    // A committed picture/deletion can survive a later selection or network error.
+    try { await refresh(); } catch (_) {}
+    status(error.message || 'Request failed. Reopen Badge Manager and retry.', true);
+  } finally { busy(false); }
+}
+$('slots').addEventListener('click', event => {
+  const tile = event.target.closest('button[data-slot]');
+  if (!tile || app.busy || app.closed) return;
+  app.selected = Number(tile.dataset.slot); controls();
+});
+$('file').addEventListener('change', async () => {
+  const file = $('file').files[0]; if (!file || app.busy || app.closed) return;
+  busy(true);
+  try {
+    const image = await createImageBitmap(file);
+    if (!image.width || !image.height) { image.close(); throw new Error('Empty photo.'); }
+    if (app.image) app.image.close();
+    app.image = image; fit(); draw(); status('Drag to reposition, adjust zoom, then save to the selected slot.');
+  } catch (_) { status('Could not open this photo. Try a JPEG, PNG or WebP image.', true); }
+  finally { busy(false); }
+});
+$('zoom').addEventListener('input', () => {
+  if (!app.image || app.busy || app.closed) return;
+  const scale = Math.max(width / app.image.width, height / app.image.height) * Number($('zoom').value);
+  app.x = width / 2 - (width / 2 - app.x) * scale / app.scale;
+  app.y = height / 2 - (height / 2 - app.y) * scale / app.scale;
+  app.scale = scale; draw();
+});
+$('background').addEventListener('input', draw);
+canvas.addEventListener('pointerdown', event => {
+  if (!app.image || app.busy || app.closed || app.drag) return;
+  app.drag = {id:event.pointerId,x:event.clientX,y:event.clientY,ox:app.x,oy:app.y};
+  canvas.setPointerCapture(event.pointerId); canvas.classList.add('dragging');
+});
+canvas.addEventListener('pointermove', event => {
+  const drag = app.drag;
+  if (!drag || drag.id !== event.pointerId) return;
+  const rect = canvas.getBoundingClientRect();
+  app.x = drag.ox + (event.clientX - drag.x) * width / rect.width;
+  app.y = drag.oy + (event.clientY - drag.y) * height / rect.height;
+  draw();
+});
+function endDrag(event) {
+  if (!app.drag || app.drag.id !== event.pointerId) return;
+  app.drag = null; canvas.classList.remove('dragging');
+  if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+}
+for (const name of ['pointerup','pointercancel','lostpointercapture']) canvas.addEventListener(name, endDrag);
+$('upload').addEventListener('click', () => {
+  if (!app.image) return;
+  action(async () => {
+    draw(); const bytes = app.encoded;
+    await request(`/badge/upload?slot=${app.selected}`, {method:'POST',headers:{'Content-Type':'application/octet-stream'},body:bytes});
+  }, 'Picture saved and active on the device.');
+});
+$('active').addEventListener('click', () => action(() => request(`/badge/active?slot=${app.selected}`, {method:'POST'}), 'Active picture updated.'));
+$('delete').addEventListener('click', () => action(() => request(`/badge/image?slot=${app.selected}`, {method:'DELETE'}), 'Picture deleted.'));
+$('refresh').addEventListener('click', () => action(async () => {}, 'Pictures refreshed.'));
+async function done() {
+  if (app.busy || app.closed) return;
+  busy(true);
+  try { await request('/badge/close', {method:'POST'}); app.closed = true; location.assign('/'); }
+  catch (error) { status(error.message || 'Could not close editor. Try Done on the device.', true); busy(false); }
+}
+$('done').addEventListener('click', done);
+$('home').addEventListener('click', event => { event.preventDefault(); done(); });
+// Refresh the browser lease while a person crops a photo. Polling never starts
+// or reopens an editor and is paused during every upload/preview operation.
+setInterval(async () => {
+  if (app.busy || app.closed || !app.state) return;
+  busy(true);
+  try {
+    const state = await request('/badge/state');
+    if (state.revision !== app.state.revision) await refresh();
+  } catch (error) { status(error.message || 'Connection lost. Reopen Badge Manager.', true); }
+  finally { busy(false); }
+}, 30000);
+draw(); controls();
+refresh().then(() => status('Choose a slot, then add a photo or set a saved picture active.'))
+  .catch(error => status(error.message || 'Could not load pictures. Reopen Badge Manager.', true))
+  .finally(() => busy(false));
+</script>
+</body>
+</html>
