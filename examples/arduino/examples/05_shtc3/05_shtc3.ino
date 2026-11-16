@@ -1,3 +1,4 @@
+#include <Demo_UI.h>
 #include <pin_config.h>
 #include <Arduino.h>
 #include <Wire.h>
@@ -120,43 +121,42 @@ static bool readShtc3(float *temperature, float *humidity)
   return true;
 }
 
+static lv_obj_t *temperature_label, *humidity_label;
+static bool screen_ready;
+static uint32_t last_sample;
 void setup()
 {
-  Serial.begin(115200);
-  delay(1000);
-
-  Serial.println();
-  Serial.println("SHTC3 test");
-
-  Wire.begin(I2C_SDA, I2C_SCL);
-  Wire.setClock(I2C_FREQ);
-
-  if (!wakeShtc3()) {
-    Serial.println("SHTC3 not found. Check SDA/SCL and power.");
-    return;
-  }
-
-  writeCommand(SHTC3_CMD_SOFT_RESET);
-  delay(2);
-
-  uint16_t id = 0;
-  if (readShtc3Id(&id)) {
-    Serial.printf("SHTC3 ID: 0x%04X\r\n", id);
-  } else {
-    Serial.println("SHTC3 ID read failed, continue measuring...");
-  }
+    Serial.begin(115200);
+    delay(200);
+    screen_ready = demo_start("ENVIRONMENT", "SHTC3 / temperature & humidity");
+    if (!screen_ready) return;
+    temperature_label = demo_metric("TEMPERATURE", 14, 92, 140, 140, &lv_font_montserrat_28);
+    humidity_label = demo_metric("HUMIDITY", 166, 92, 140, 140, &lv_font_montserrat_28);
+    demo_text(lv_obj_get_parent(temperature_label), "degrees C", 10, 99, 120, LV_FONT_DEFAULT, 0x63758c);
+    demo_text(lv_obj_get_parent(humidity_label), "% RH", 10, 99, 120, LV_FONT_DEFAULT, 0x63758c);
+    demo_text(demo_screen(), "Live measurement / refreshed each second", 14, 248, 292, LV_FONT_DEFAULT, 0x63758c);
+    if (wakeShtc3()) { writeCommand(SHTC3_CMD_SOFT_RESET); delay(2); }
+    last_sample = millis() - 1000;
 }
-
 void loop()
 {
-  float temperature = 0.0f;
-  float humidity = 0.0f;
-
-  if (readShtc3(&temperature, &humidity)) {
-    Serial.printf("Temperature: %.2f C, Humidity: %.2f %%\r\n", temperature, humidity);
-  } else {
-    Serial.println("Failed to read SHTC3");
-  }
-
-  delay(1000);
+    demo_tick();
+    if (screen_ready && millis() - last_sample >= 1000) {
+        last_sample = millis();
+        float temperature = 0, humidity = 0;
+        if (readShtc3(&temperature, &humidity)) {
+            char text[24];
+            snprintf(text, sizeof(text), "%.1f", temperature);
+            lv_label_set_text(temperature_label, text);
+            snprintf(text, sizeof(text), "%.1f", humidity);
+            lv_label_set_text(humidity_label, text);
+            demo_status_set("Sensor online / CRC checked", false);
+            Serial.printf("%.2f C; %.2f %%RH\n",temperature,humidity);
+        } else {
+            lv_label_set_text(temperature_label, "--");
+            lv_label_set_text(humidity_label, "--");
+            demo_status_set("SHTC3 read/CRC error / retrying", true);
+        }
+    }
+    delay(5);
 }

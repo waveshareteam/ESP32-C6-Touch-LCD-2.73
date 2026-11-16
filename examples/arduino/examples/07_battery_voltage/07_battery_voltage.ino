@@ -1,85 +1,39 @@
-#include <Arduino.h>
-#include <lvgl.h>
-#include <Board_IO.h>
-#include <Display_ILI9488.h>
+#include <Demo_UI.h>
 
-static lv_color_t pixels[LCD_WIDTH * 10];
-static lv_disp_draw_buf_t buffer;
-static lv_disp_drv_t display;
-static lv_obj_t *label;
-static uint32_t last_sample, last_tick;
-static bool backlight_ready;
-
-static void flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color)
-{
-  LCD_addWindow(area->x1, area->y1, area->x2, area->y2, (uint16_t *)color);
-  lv_disp_flush_ready(drv);
-}
-
+static lv_obj_t *voltage_label, *raw_label;
+static bool screen_ready;
+static uint32_t last_sample;
 void setup()
 {
-  Serial.begin(115200);
-  delay(200);
-  Serial.println("ESP32-C6-Touch-LCD-2.73 battery voltage demo");
-
-  // The LCD reset and backlight depend on the IO expander being ready.
-  while (!Board_IO_Init()) {
-    Serial.println("CH32V006 not ready; retrying in 250 ms");
-    delay(250);
-  }
-  Serial.println("CH32V006 ready");
-  Board_SetBacklight(0);
-  if (!LCD_Init()) {
-    Serial.println("LCD initialization failed");
-    while (true) delay(1000);
-  }
-  Serial.println("LCD initialization sequence sent");
-  lv_init();
-  lv_disp_draw_buf_init(&buffer, pixels, nullptr, LCD_WIDTH * 10);
-  lv_disp_drv_init(&display);
-  display.hor_res = LCD_WIDTH;
-  display.ver_res = LCD_HEIGHT;
-  display.flush_cb = flush;
-  display.draw_buf = &buffer;
-  lv_disp_drv_register(&display);
-  lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0xf3f6fa), 0);
-  label = lv_label_create(lv_scr_act());
-  lv_obj_set_style_text_color(label, lv_color_hex(0x203040), 0);
-  lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
-  lv_label_set_text(label, "Battery voltage\nReading ADC...");
-  lv_obj_center(label);
-  lv_refr_now(nullptr);
-  backlight_ready = Board_SetBacklight(97);
-  Serial.println(backlight_ready ? "Backlight: 97%" : "Backlight write failed; will retry");
-  last_tick = millis();
-  last_sample = last_tick - 1000;
+    Serial.begin(115200);
+    delay(200);
+    screen_ready = demo_start("BATTERY VOLTAGE", "CH32V006 / 12-bit ADC");
+    if (!screen_ready) return;
+    voltage_label = demo_metric("BATTERY TERMINAL VOLTAGE", 14, 84, 292, 106, &lv_font_montserrat_28);
+    raw_label = demo_metric("ADC / 4095", 14, 204, 140, 68, &lv_font_montserrat_20);
+    lv_obj_t *average = demo_metric("AVERAGING", 166, 204, 140, 68, &lv_font_montserrat_20);
+    lv_label_set_text(average, "8 samples");
+    last_sample = millis() - 1000;
 }
-
 void loop()
 {
-  if (!label) { delay(100); return; }
-  uint32_t now = millis();
-  lv_tick_inc(now - last_tick);
-  last_tick = now;
-  if (now - last_sample >= 1000) {
-    last_sample = now;
-    if (!backlight_ready) {
-      backlight_ready = Board_SetBacklight(97);
-      Serial.println(backlight_ready ? "Backlight: 97%" : "Backlight write failed; will retry");
+    demo_tick();
+    if (screen_ready && millis() - last_sample >= 1000) {
+        last_sample = millis();
+        float voltage = 0;
+        uint16_t raw = 0;
+        if (Board_ReadBatteryVoltage(voltage, raw)) {
+            char text[24];
+            snprintf(text, sizeof(text), "%.3f V", voltage);
+            lv_label_set_text(voltage_label, text);
+            lv_label_set_text_fmt(raw_label, "%u", raw);
+            demo_status_set("Voltage test / compare with a meter", false);
+            Serial.printf("ADC=%u; voltage=%.3f V\n",raw,voltage);
+        } else {
+            lv_label_set_text(voltage_label, "-- V");
+            lv_label_set_text(raw_label, "--");
+            demo_status_set("Battery ADC read failed / retrying", true);
+        }
     }
-    float voltage;
-    uint16_t raw;
-    if (Board_ReadBatteryVoltage(voltage, raw)) {
-      char text[96];
-      snprintf(text, sizeof(text), "Battery voltage\n%.3f V\nADC: %u / 4095", voltage, raw);
-      lv_label_set_text(label, text);
-      Serial.println(text);
-    } else {
-      lv_label_set_text(label, "Battery voltage\nADC read failed");
-      Serial.println("Battery ADC read failed");
-    }
-    lv_obj_center(label);
-  }
-  lv_timer_handler();
-  delay(5);
+    delay(5);
 }

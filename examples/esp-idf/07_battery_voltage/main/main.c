@@ -1,35 +1,33 @@
-#include "bsp/esp-bsp.h"
+#include "demo_ui.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 void app_main(void)
 {
-    ESP_ERROR_CHECK(bsp_io_expander_init());
-    ESP_ERROR_CHECK(bsp_display_start() ? ESP_OK : ESP_FAIL);
-    lv_obj_t *label = NULL;
-    if (bsp_display_lock(UINT32_MAX)) {
-        lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0xf3f6fa), 0);
-        label = lv_label_create(lv_screen_active());
-        lv_obj_set_style_text_color(label, lv_color_hex(0x203040), 0);
-        lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
-        lv_label_set_text(label, "Battery voltage\nReading ADC...");
-        lv_obj_center(label);
-        bsp_display_unlock();
-    }
-    ESP_ERROR_CHECK(bsp_display_show());
+    ESP_ERROR_CHECK(demo_start("BATTERY VOLTAGE", "CH32V006 / 12-bit ADC") ? ESP_OK : ESP_FAIL);
+    demo_lock();
+    lv_obj_t *voltage = demo_metric("BATTERY TERMINAL VOLTAGE", 14, 84, 292, 106, &lv_font_montserrat_28);
+    lv_obj_t *raw = demo_metric("ADC / 4095", 14, 204, 140, 68, &lv_font_montserrat_20);
+    lv_obj_t *average = demo_metric("AVERAGING", 166, 204, 140, 68, &lv_font_montserrat_20);
+    lv_label_set_text(average, "8 samples");
+    demo_unlock();
     while (true) {
-        float voltage = 0;
-        uint16_t raw = 0;
-        esp_err_t ret = bsp_battery_get_voltage(&voltage, &raw);
-        if (ret == ESP_OK) ESP_LOGI("battery", "ADC=%u; voltage=%.3f V", raw, voltage);
-        else ESP_LOGW("battery", "Read: %s", esp_err_to_name(ret));
-        if (label && bsp_display_lock(UINT32_MAX)) {
-            if (ret == ESP_OK) lv_label_set_text_fmt(label, "Battery voltage\n%.3f V\nADC: %u / 4095", (double)voltage, raw);
-            else lv_label_set_text(label, "Battery voltage\nADC read failed");
-            lv_obj_center(label);
-            bsp_display_unlock();
+        float v = 0;
+        uint16_t adc = 0;
+        esp_err_t ret = bsp_battery_get_voltage(&v, &adc);
+        demo_lock();
+        if (ret == ESP_OK) {
+            lv_label_set_text_fmt(voltage, "%.3f V", (double)v);
+            lv_label_set_text_fmt(raw, "%u", adc);
+            demo_status_set("Voltage test / compare with a meter", false);
+            ESP_LOGI("battery", "ADC=%u; voltage=%.3f V", adc,v);
+        } else {
+            lv_label_set_text(voltage, "-- V");
+            lv_label_set_text(raw, "--");
+            demo_status_set(esp_err_to_name(ret), true);
         }
+        demo_unlock();
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

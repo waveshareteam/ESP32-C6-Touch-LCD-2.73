@@ -1,7 +1,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include "bsp/esp-bsp.h"
+#include "demo_ui.h"
 #include "esp_log.h"
 
 static const char *TAG = "sd_card";
@@ -10,6 +10,8 @@ static const char test_path[] = BSP_SD_MOUNT_POINT "/test.txt";
 
 typedef struct {
     esp_err_t error;
+    bsp_sdcard_info_t info;
+    bool space_valid;
     const char *status;
     const char *hint;
     char contents[sizeof(test_text)];
@@ -26,6 +28,7 @@ static void run_sd_test(sd_test_result_t *result)
         return;
     }
     ESP_LOGI(TAG, "SD card mounted at %s", BSP_SD_MOUNT_POINT);
+    result->space_valid = bsp_sdcard_get_info(&result->info) == ESP_OK;
 
     result->error = ESP_FAIL;
     result->status = "File write failed";
@@ -63,7 +66,7 @@ static void run_sd_test(sd_test_result_t *result)
     }
     ESP_LOGI(TAG, "Read successful: %s", result->contents);
     result->error = ESP_OK;
-    result->status = "Write / read passed";
+    result->status = "Write / read: PASS";
     result->hint = "Test complete.\nPress RESET to run again.";
 
 cleanup:
@@ -84,63 +87,22 @@ cleanup:
 
 static void show_result(const sd_test_result_t *result)
 {
-    if (!bsp_display_start()) {
-        ESP_LOGE(TAG, "Display initialization failed; check the serial test result above");
-        return;
+    if (!demo_start("SD CARD TEST", "microSD / SPI / FAT32")) return;
+    demo_lock();
+    lv_obj_t *capacity = demo_metric("CAPACITY", 14, 84, 140, 76, &lv_font_montserrat_20);
+    lv_obj_t *space = demo_metric("FREE SPACE", 166, 84, 140, 76, &lv_font_montserrat_20);
+    if (result->info.mounted) {
+        lv_label_set_text_fmt(capacity, "%llu MiB", (unsigned long long)(result->info.capacity_bytes / 1048576));
+        if (result->space_valid)
+            lv_label_set_text_fmt(space, "%llu MiB", (unsigned long long)(result->info.free_bytes / 1048576));
     }
-    if (!bsp_display_lock(UINT32_MAX)) {
-        ESP_LOGE(TAG, "Display lock unavailable");
-        return;
-    }
-
-    lv_obj_t *screen = lv_screen_active();
-    lv_obj_set_style_bg_color(screen, lv_color_hex(0xf3f6fa), 0);
-    lv_obj_set_style_text_color(screen, lv_color_hex(0x203040), 0);
-    lv_obj_set_style_pad_all(screen, 16, 0);
-    lv_obj_remove_flag(screen, LV_OBJ_FLAG_SCROLLABLE);
-
-    lv_obj_t *title = lv_label_create(screen);
-    lv_label_set_text(title, "SD Card Test");
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 4);
-
-    lv_obj_t *status = lv_label_create(screen);
-    lv_obj_set_width(status, (BSP_LCD_H_RES - 32));
-    lv_obj_set_style_text_align(status, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_style_text_color(status,
-        lv_color_hex(result->error == ESP_OK ? 0x16804a : 0xb63636), 0);
-    lv_label_set_text_fmt(status, "%s\n%s", result->status, esp_err_to_name(result->error));
-    lv_obj_align(status, LV_ALIGN_TOP_MID, 0, 36);
-
-    lv_obj_t *card = lv_obj_create(screen);
-    lv_obj_set_size(card, (BSP_LCD_H_RES - 32), 132);
-    lv_obj_align(card, LV_ALIGN_TOP_MID, 0, 88);
-    lv_obj_set_style_bg_color(card, lv_color_white(), 0);
-    lv_obj_set_style_border_width(card, 0, 0);
-    lv_obj_set_style_radius(card, 12, 0);
-    lv_obj_set_style_pad_all(card, 12, 0);
-    lv_obj_remove_flag(card, LV_OBJ_FLAG_SCROLLABLE);
-
-    lv_obj_t *path = lv_label_create(card);
-    lv_label_set_text(path, test_path);
-    lv_obj_set_style_text_color(path, lv_color_hex(0x637487), 0);
-    lv_obj_align(path, LV_ALIGN_TOP_LEFT, 0, 0);
-
-    lv_obj_t *contents = lv_label_create(card);
-    lv_obj_set_width(contents, (BSP_LCD_H_RES - 56));
-    lv_label_set_long_mode(contents, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(contents, result->contents[0] ? result->contents : "No data read from the card.");
-    lv_obj_align(contents, LV_ALIGN_TOP_LEFT, 0, 32);
-
-    lv_obj_t *hint = lv_label_create(screen);
-    lv_obj_set_width(hint, (BSP_LCD_H_RES - 32));
-    lv_obj_set_style_text_align(hint, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_style_text_color(hint, lv_color_hex(0x637487), 0);
-    lv_label_set_text(hint, result->hint);
-    lv_obj_align(hint, LV_ALIGN_TOP_MID, 0, 236);
-    bsp_display_unlock();
-
-    esp_err_t ret = bsp_display_show();
-    if (ret != ESP_OK) ESP_LOGE(TAG, "First frame display failed: %s", esp_err_to_name(ret));
+    lv_obj_t *card = demo_card(14, 172, 292, 98);
+    demo_text(card, result->status, 12, 10, 268, &lv_font_montserrat_20,
+              result->error == ESP_OK ? 0x16804a : 0xc34040);
+    demo_text(card, result->contents[0] ? result->contents : "No verified file data", 12, 56, 268,
+              LV_FONT_DEFAULT, 0x63758c);
+    demo_status_set(result->error == ESP_OK ? "test.txt verified / RESET to repeat" : result->hint, result->error != ESP_OK);
+    demo_unlock();
 }
 
 void app_main(void)
