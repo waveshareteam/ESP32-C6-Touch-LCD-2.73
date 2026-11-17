@@ -31,7 +31,7 @@
 
 | 工程 | 主要功能 |
 | --- | --- |
-| [出厂应用](examples/factory/README_ZH.md) | 11 个 APP：Display Test、Settings、Touch Test、Ball、Weather、Sensor、2048、Button Test、PinsTest、Badge 和 Watch。 |
+| [出厂应用](examples/factory/README_ZH.md) | 11 个 APP：Display Test、Settings、Touch Test、GravityBall、Weather、Sensor、2048、Button Test、PinsTest、Badge 和 Watch。 |
 
 电子徽章将图片保存在板载 Flash，支持手机上传。本版本不包含 SD 卡相册 Photos；操作方式和配网方法见[出厂应用说明](examples/factory/README_ZH.md)。
 
@@ -71,7 +71,7 @@
 - [出厂固件与烧录方法](firmware/README_ZH.md)
 - [板级支持与引脚定义](examples/factory/components/esp32_c6_touch_lcd_2_73/include/bsp/esp32_c6_touch_lcd_2_73.h)
 - [板级 IO 与显示格式](docs/board-io_ZH.md)
-- [底板原理图](hardware/schematic/ESP32-C6-LCD-2.73.pdf)
+- [底板原理图](hardware/schematic/ESP32-C6-Touch-LCD-2.73.pdf)
 
 ## 🤝 支持
 

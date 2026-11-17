@@ -2,7 +2,7 @@
 
 [English](board-io.md) | [简体中文](board-io_ZH.md)
 
-这些示例适用于 **16 MB Flash、无 PSRAM** 的 ESP32-C6-Touch-LCD-2.73。附带的[底板原理图](../hardware/schematic/ESP32-C6-LCD-2.73.pdf)仍带有旧版 N8 模组标注，示例配置对应 16 MB 实物。
+这些示例适用于 **16 MB Flash、无 PSRAM** 的 ESP32-C6-Touch-LCD-2.73。硬件连接见[底板原理图](../hardware/schematic/ESP32-C6-Touch-LCD-2.73.pdf)，示例配置对应 16 MB 实物。
 
 | 功能 | 连接 |
 | --- | --- |

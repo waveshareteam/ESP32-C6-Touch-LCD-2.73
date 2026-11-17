@@ -31,7 +31,7 @@ This repository provides ESP-IDF and Arduino examples, the factory demonstration
 
 | Project | Main feature |
 | --- | --- |
-| [Factory application](examples/factory/) | Eleven apps: Display Test, Settings, Touch Test, Ball, Weather, Sensor, 2048, Button Test, PinsTest, Badge and Watch. |
+| [Factory application](examples/factory/) | Eleven apps: Display Test, Settings, Touch Test, GravityBall, Weather, Sensor, 2048, Button Test, PinsTest, Badge and Watch. |
 
 The Photo Badge stores images in on-board Flash and accepts uploads from a phone. The SD-card Photos gallery is not included. See the [factory guide](examples/factory/README.md) for controls and Wi-Fi setup.
 
@@ -71,7 +71,7 @@ Start with the [ESP-IDF guide](docs/getting-started-idf.md) or [Arduino guide](d
 - [Factory firmware and flashing](firmware/README.md)
 - [Board support and pin definitions](examples/factory/components/esp32_c6_touch_lcd_2_73/include/bsp/esp32_c6_touch_lcd_2_73.h)
 - [Board IO and display format](docs/board-io.md)
-- [Baseboard schematic](hardware/schematic/ESP32-C6-LCD-2.73.pdf)
+- [Baseboard schematic](hardware/schematic/ESP32-C6-Touch-LCD-2.73.pdf)
 
 ## 🤝 Support
 

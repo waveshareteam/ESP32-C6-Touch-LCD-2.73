@@ -2,7 +2,7 @@
 
 [English](board-io.md) | [简体中文](board-io_ZH.md)
 
-These examples target ESP32-C6-Touch-LCD-2.73 with **16 MB Flash and no PSRAM**. The supplied [baseboard schematic](../hardware/schematic/ESP32-C6-LCD-2.73.pdf) carries an older N8 module marking; the example configuration targets the 16 MB hardware.
+These examples target ESP32-C6-Touch-LCD-2.73 with **16 MB Flash and no PSRAM**. See the [baseboard schematic](../hardware/schematic/ESP32-C6-Touch-LCD-2.73.pdf) for hardware connections; the example configuration targets the 16 MB hardware.
 
 | Function | Connection |
 | --- | --- |
