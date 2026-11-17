@@ -1,0 +1,17 @@
+menu "C6 2.73 Weather"
+    config C6273_WEATHER_API_ID
+        string "Weather service API ID"
+        default "10015813"
+    config C6273_WEATHER_API_KEY
+        string "Weather service API key"
+        default "070d8d7113bef63bbad7216a89cb00a4"
+    config C6273_WEATHER_PROVINCE
+        string "Province sent to API (UTF-8)"
+        default "广东"
+    config C6273_WEATHER_CITY
+        string "City sent to API (UTF-8)"
+        default "深圳"
+    config C6273_WEATHER_CITY_LABEL
+        string "City display name"
+        default "Shenzhen"
+endmenu
